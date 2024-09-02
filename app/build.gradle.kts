@@ -80,16 +80,18 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.1")
     // Animation for navBar
     implementation("com.exyte:animated-navigation-bar:1.0.0")
+    //Async Image Painter
+    implementation("io.coil-kt:coil-compose:2.7.0")
     // Import the Firebase BoM
     implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
-    // When using the BoM, don't specify versions in Firebase dependencies
+    // Live Data
+    implementation("androidx.compose.runtime:runtime-livedata:1.6.8")
 
+    // When using the BoM, don't specify versions in Firebase dependencies
     // Firebase Products
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.firebase:firebase-storage-ktx")
     implementation("com.google.firebase:firebase-database-ktx")
     implementation("com.google.firebase:firebase-analytics")
-
-
 }

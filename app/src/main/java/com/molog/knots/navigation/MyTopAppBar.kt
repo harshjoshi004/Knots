@@ -38,7 +38,8 @@ fun MyTopAppBar(
     MediumTopAppBar(
         title = {
             Crossfade(targetState = mainViewModel.currentScreen.value) { it->
-                Text(text = it.title, fontFamily = fbFontFamily, fontWeight = FontWeight.Bold)
+                Text(text = it.title, fontFamily = fbFontFamily, fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(top = 8.dp))
             }
         },
         colors = TopAppBarDefaults.mediumTopAppBarColors(

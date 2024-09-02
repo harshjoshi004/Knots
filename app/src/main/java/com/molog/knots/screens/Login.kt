@@ -1,5 +1,7 @@
 package com.molog.knots.screens
 
+import android.app.ProgressDialog
+import android.widget.Toast
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -25,32 +27,41 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.molog.knots.AuthViewModel
 import com.molog.knots.R
+import com.molog.knots.ReusableComposables
 import com.molog.knots.ui.theme.fbFontFamily
 import com.molog.knots.ui.theme.knotsBlack
 import com.molog.knots.ui.theme.knotsPrimary
 
 @Composable
 fun Login(navController: NavHostController, wrapUp:()->Unit) {
+    val context = LocalContext.current
+    val authViewModel: AuthViewModel = viewModel()
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var isPasswordVisible by remember { mutableStateOf(false) }
     var emailError by remember { mutableStateOf("") }
     var passwordError by remember { mutableStateOf("") }
 
-    Box(modifier = Modifier.background(knotsBlack).fillMaxSize()) {
+    val progressDialog = ReusableComposables.myLoaderDialogue(context = context)
+
+    Box(modifier = Modifier
+        .background(knotsBlack)
+        .fillMaxSize()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
+                .padding(horizontal = 36.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -111,13 +122,31 @@ fun Login(navController: NavHostController, wrapUp:()->Unit) {
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(36.dp))
 
             //Button to Login
             Button(
                 onClick = {
-                    // Perform login action (not yet implemented)
-                    wrapUp()
+                    progressDialog.show()
+                    if(isDetailValid(password = password, email = email,
+                            passwordError = passwordError, emailError = emailError,
+                            context = context)
+                    ){
+                        authViewModel.loginWithFirebase(email,password,
+                            onSuccess = {
+                                wrapUp()
+                                progressDialog.hide()
+                                ReusableComposables.myToast(context, "SignIn Successful!")
+                            },
+                            onError = {
+                                progressDialog.hide()
+                                ReusableComposables.myToast(
+                                    context,
+                                    authViewModel.firebaseError.value?:"Something went wrong!"
+                                )
+                            }
+                        )
+                    }
                 },
                 enabled = emailError.isEmpty() && passwordError.isEmpty(),
                 modifier = Modifier.fillMaxWidth(),
@@ -133,8 +162,18 @@ fun Login(navController: NavHostController, wrapUp:()->Unit) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            TextButton(onClick = { navController.navigate("register") }) {
-                Text("New User? Create Account", fontWeight = FontWeight.Light, fontFamily = fbFontFamily)
+            TextButton(
+                onClick = {
+                    navController.navigate("register") {
+                        popUpTo(navController.graph.startDestinationId)
+                        launchSingleTop = true
+                    }
+                }
+            ) {
+                Text("New User? Create Account",
+                    fontWeight = FontWeight.Light,
+                    fontFamily = fbFontFamily
+                )
             }
         }
     }
